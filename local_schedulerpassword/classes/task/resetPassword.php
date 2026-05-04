@@ -45,15 +45,25 @@ class resetPassword extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
 
-        $sql = "SELECT u.id, u.username
-                FROM {user} u
-                WHERE u.suspended = 0 AND u.deleted = 0;";
-        $users = $DB->get_record_sql($sql);
-
-        $roles = $DB->get_record_sql("SELECT r.name FROM {role} r;");
+        $sql = "SELECT *
+                    FROM {user} u
+                    JOIN {role_assignments} ra ON ra.userid = u.id
+                    JOIN {role} r ON r.id = ra.roleid
+                    WHERE u.suspended = 0 
+                        AND u.deleted = 0
+                        AND r.shortname = 'student';";
+        $usuarios = $DB->get_record_sql($sql);
 
         $nova_senha = $this->generate_random_password();
+        foreach ($usuarios as $usuario) {
+            //update_user_password($usuario, $nova_senha);
+            $contador++;
+        }
 
-        \mtrace("Roles: " . implode(', ', array_column($roles, 'name')) . "\n Nova senha: {$nova_senha}");
+        $papeis = $DB->get_record_sql("SELECT * FROM {role} r;");
+
+        \mtrace("Papeis (name): " . implode(', ', array_column($papeis, 'name'))));
+        \mtrace("Papeis (shortname): " . implode(', ', array_column($papeis, 'shortname')));
+        \mtrace("Nova senha: {$nova_senha}");
     }
 }
