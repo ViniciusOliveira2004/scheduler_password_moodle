@@ -45,7 +45,7 @@ class resetPassword extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
 
-        $sql = "SELECT *
+        $sql = "SELECT DISTINCT *
                     FROM {user} u
                     JOIN {role_assignments} ra ON ra.userid = u.id
                     JOIN {role} r ON r.id = ra.roleid
