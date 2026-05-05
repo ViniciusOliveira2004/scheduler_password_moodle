@@ -52,17 +52,14 @@ class resetPassword extends \core\task\scheduled_task {
                     WHERE u.suspended = 0 
                         AND u.deleted = 0
                         AND r.shortname = 'student';";
-        $usuarios = $DB->get_record_sql($sql);
+        $usuarios = $DB->get_records_sql($sql);
 
         $nova_senha = $this->generate_random_password();
-        foreach ($usuarios as $usuario) {
-            //update_user_password($usuario, $nova_senha);
-            $contador++;
-        }
+        //foreach ($usuarios as $usuario) {//update_user_password($usuario, $nova_senha) }
 
-        $papeis = $DB->get_record_sql("SELECT * FROM {role} r;");
+        $papeis = $DB->get_records_sql("SELECT * FROM {role} r;");
 
-        \mtrace("Papeis (name): " . implode(', ', array_column($papeis, 'name'))));
+        \mtrace("Papeis (name): " . implode(', ', array_column($papeis, 'name')));
         \mtrace("Papeis (shortname): " . implode(', ', array_column($papeis, 'shortname')));
         \mtrace("Nova senha: {$nova_senha}");
     }
