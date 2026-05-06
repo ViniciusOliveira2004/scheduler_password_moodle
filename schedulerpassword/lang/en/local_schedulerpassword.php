@@ -22,5 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+
 $string['pluginname'] = 'Scheduler Password Reset';
 $string['reset_passwords'] = 'Reset Diário de Senhas de Usuários';

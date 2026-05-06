@@ -23,6 +23,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
 $plugin->component = 'local_schedulerpassword';
 $plugin->version   = 2026042900;
 $plugin->release   = '1.0.0';

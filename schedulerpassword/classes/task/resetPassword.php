@@ -25,14 +25,42 @@ namespace local_schedulerpassword\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/local/schedulerpassword/lib.php');
-
 class resetPassword extends \core\task\scheduled_task {
 
     public function get_name() {
         return "Reset diário de senhas dos usuários";
     }
 
+    private function generate_random_password() {
+        $prefixo = '2025';
+
+        $letras = 'abcdefghijklmnopqrstuvwxyz';
+        $numeros = '0123456789';
+        $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+        $seed = round(microtime(true) * 1000);
+        $buffer = [];
+
+        $letraIndex = $seed % strlen($letras);
+        $buffer[] = $letras[$letraIndex];
+
+        for ($i = 0; $i < 5; $i++) {
+            $index = ($seed + $i * 37) % strlen($chars);
+            $buffer[] = $chars[$index];
+        }
+
+        for ($i = count($buffer) - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            $temp = $buffer[$i];
+            $buffer[$i] = $buffer[$j];
+            $buffer[$j] = $temp;
+        }
+
+        $senha = $prefixo . implode('', $buffer);
+        return $senha;
+
+    }
+    
     public function execute() {
         global $DB;
 
@@ -45,7 +73,7 @@ class resetPassword extends \core\task\scheduled_task {
                         AND r.shortname = 'student';";
         $usuarios = $DB->get_records_sql($sql);
 
-        $nova_senha = local_schedulerpassword_generate_random_password();
+        $nova_senha = $this->generate_random_password();
         $count = 0;
         foreach ($usuarios as $usuario) { 
             //update_user_password($usuario, $nova_senha) 
