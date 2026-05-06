@@ -24,6 +24,7 @@
 namespace local_schedulerpassword\task;
 
 defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/local/schedulerpassword/lib.php');
 
 class resetPassword extends \core\task\scheduled_task {

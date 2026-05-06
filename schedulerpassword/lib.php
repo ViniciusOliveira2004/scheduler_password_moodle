@@ -21,6 +21,7 @@
  * @copyright 2026, Vinicius Oliveira
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 function local_schedulerpassword_generate_random_password() {
     $prefixo = '2025';
