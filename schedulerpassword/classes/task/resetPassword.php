@@ -32,7 +32,6 @@ class resetPassword extends \core\task\scheduled_task {
         return "Reset diário de senhas dos usuários";
     }
 
-
     public function execute() {
         global $DB;
 
@@ -46,12 +45,13 @@ class resetPassword extends \core\task\scheduled_task {
         $usuarios = $DB->get_records_sql($sql);
 
         $nova_senha = local_schedulerpassword_generate_random_password();
-        //foreach ($usuarios as $usuario) { update_user_password($usuario, $nova_senha) }
+        $count = 0;
+        foreach ($usuarios as $usuario) { 
+            //update_user_password($usuario, $nova_senha) 
+            $count++;
+        }
 
-        $papeis = $DB->get_records_sql("SELECT * FROM {role} r;");
-
-        \mtrace("Papeis (name): " . implode(', ', array_column($papeis, 'name')));
-        \mtrace("Papeis (shortname): " . implode(', ', array_column($papeis, 'shortname')));
+        \mtrace("Total de usuários com senha resetada: {$count}");
         \mtrace("Nova senha: {$nova_senha}");
     }
 }
