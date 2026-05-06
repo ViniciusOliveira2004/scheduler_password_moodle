@@ -24,6 +24,9 @@
 namespace local_schedulerpassword\task;
 
 defined('MOODLE_INTERNAL') || die();
+global $DB, $CFG;
+
+require_once($CFG->libdir . '/moodlelib.php');
 
 class resetPassword extends \core\task\scheduled_task {
 
@@ -62,7 +65,6 @@ class resetPassword extends \core\task\scheduled_task {
     }
 
     public function execute() {
-        global $DB;
 
         $sql = "SELECT *
                     FROM {user} u
@@ -76,8 +78,21 @@ class resetPassword extends \core\task\scheduled_task {
                             AND r.shortname = 'student'
                     );";
         $usuarios = $DB->get_recordset_sql($sql);
+        $sql = "UPDATE {user} u
+                SET u.password = :password
+                WHERE u.suspended = 0
+                AND u.deleted = 0
+                AND EXISTS (
+                    SELECT 1
+                    FROM {role_assignments} ra
+                    JOIN {role} r ON r.id = ra.roleid
+                    WHERE ra.userid = u.id
+                    AND r.shortname = 'student'
+                )";
 
-        $nova_senha = $this->generate_random_password();
+        //$DB->execute($sql, ['password' => $hashed]);
+        $nova_senha = hash_internal_user_password($this->generate_random_password());
+
         $count = 0;
         foreach ($usuarios as $usuario) { 
             //update_user_password($usuario, $nova_senha) 
