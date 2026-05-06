@@ -60,18 +60,22 @@ class resetPassword extends \core\task\scheduled_task {
         return $senha;
 
     }
-    
+
     public function execute() {
         global $DB;
 
-        $sql = "SELECT DISTINCT *
+        $sql = "SELECT *
                     FROM {user} u
-                    JOIN {role_assignments} ra ON ra.userid = u.id
-                    JOIN {role} r ON r.id = ra.roleid
                     WHERE u.suspended = 0 
-                        AND u.deleted = 0
-                        AND r.shortname = 'student';";
-        $usuarios = $DB->get_records_sql($sql);
+                    AND u.deleted = 0
+                    AND EXISTS (
+                        SELECT 1 
+                        FROM {role_assignments} ra
+                        JOIN {role} r ON r.id = ra.roleid
+                        WHERE ra.userid = u.id 
+                            AND r.shortname = 'student'
+                    );";
+        $usuarios = $DB->get_recordset_sql($sql);
 
         $nova_senha = $this->generate_random_password();
         $count = 0;
