@@ -22,13 +22,32 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-$plugin->component = 'local_schedulerpassword';
-$plugin->version   = 2026042900;
-$plugin->release   = '1.0.0';
-$plugin->requires  = 2025041402;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->supported = [
-    200,
-    502
-];
+function local_schedulerpassword_generate_random_password() {
+    $prefixo = '2025';
+
+    $letras = 'abcdefghijklmnopqrstuvwxyz';
+    $numeros = '0123456789';
+    $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+    $seed = round(microtime(true) * 1000);
+    $buffer = [];
+
+    $letraIndex = $seed % strlen($letras);
+    $buffer[] = $letras[$letraIndex];
+
+    for ($i = 0; $i < 5; $i++) {
+        $index = ($seed + $i * 37) % strlen($chars);
+        $buffer[] = $chars[$index];
+    }
+
+    for ($i = count($buffer) - 1; $i > 0; $i--) {
+        $j = random_int(0, $i);
+        $temp = $buffer[$i];
+        $buffer[$i] = $buffer[$j];
+        $buffer[$j] = $temp;
+    }
+
+    $senha = $prefixo . implode('', $buffer);
+    return $senha;
+
+}

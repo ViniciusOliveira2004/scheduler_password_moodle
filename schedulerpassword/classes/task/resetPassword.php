@@ -1,10 +1,30 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * @package    local_schedulerpassword
-*/
+ * Plugin functions for the local_schedulerpassword plugin.
+ *
+ * @package   local_schedulerpassword
+ * @copyright 2026, Vinicius Oliveira
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace local_schedulerpassword\task;
 
 defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot . '/local/schedulerpassword/lib.php');
 
 class resetPassword extends \core\task\scheduled_task {
 
@@ -12,35 +32,6 @@ class resetPassword extends \core\task\scheduled_task {
         return "Reset diário de senhas dos usuários";
     }
 
-    private function generate_random_password() {
-        $prefixo = '2025';
-
-        $letras = 'abcdefghijklmnopqrstuvwxyz';
-        $numeros = '0123456789';
-        $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-
-        $seed = round(microtime(true) * 1000);
-        $buffer = [];
-
-        $letraIndex = $seed % strlen($letras);
-        $buffer[] = $letras[$letraIndex];
-
-        for ($i = 0; $i < 5; $i++) {
-            $index = ($seed + $i * 37) % strlen($chars);
-            $buffer[] = $chars[$index];
-        }
-
-        for ($i = count($buffer) - 1; $i > 0; $i--) {
-            $j = random_int(0, $i);
-            $temp = $buffer[$i];
-            $buffer[$i] = $buffer[$j];
-            $buffer[$j] = $temp;
-        }
-
-        $senha = $prefixo . implode('', $buffer);
-        return $senha;
-
-    }
 
     public function execute() {
         global $DB;
@@ -54,8 +45,8 @@ class resetPassword extends \core\task\scheduled_task {
                         AND r.shortname = 'student';";
         $usuarios = $DB->get_records_sql($sql);
 
-        $nova_senha = $this->generate_random_password();
-        //foreach ($usuarios as $usuario) {//update_user_password($usuario, $nova_senha) }
+        $nova_senha = local_schedulerpassword_generate_random_password();
+        //foreach ($usuarios as $usuario) { update_user_password($usuario, $nova_senha) }
 
         $papeis = $DB->get_records_sql("SELECT * FROM {role} r;");
 
