@@ -24,9 +24,6 @@
 namespace local_schedulerpassword\task;
 
 defined('MOODLE_INTERNAL') || die();
-global $DB, $CFG;
-
-require_once($CFG->libdir . '/moodlelib.php');
 
 class resetPassword extends \core\task\scheduled_task {
 
@@ -65,20 +62,14 @@ class resetPassword extends \core\task\scheduled_task {
     }
 
     public function execute() {
+        global $DB;
 
-        $sql = "SELECT *
-                    FROM {user} u
-                    WHERE u.suspended = 0 
-                    AND u.deleted = 0
-                    AND EXISTS (
-                        SELECT 1 
-                        FROM {role_assignments} ra
-                        JOIN {role} r ON r.id = ra.roleid
-                        WHERE ra.userid = u.id 
-                            AND r.shortname = 'student'
-                    );";
-        $usuarios = $DB->get_recordset_sql($sql);
-        $sql = "UPDATE {user} u
+        \mtrace("Iniciando o reset de senhas...");
+
+        try {
+            $nova_senha_gerada = $this->generate_random_password();
+            $nova_senha_hash = hash_internal_user_password($nova_senha_gerada);
+            $sql = "UPDATE {user} u
                 SET u.password = :password
                 WHERE u.suspended = 0
                 AND u.deleted = 0
@@ -88,18 +79,14 @@ class resetPassword extends \core\task\scheduled_task {
                     JOIN {role} r ON r.id = ra.roleid
                     WHERE ra.userid = u.id
                     AND r.shortname = 'student'
-                )";
+                );";
+            $DB->execute($sql, ['password' => $nova_senha_hash]);
 
-        //$DB->execute($sql, ['password' => $hashed]);
-        $nova_senha = hash_internal_user_password($this->generate_random_password());
+            \mtrace("SUCESSO: A senha de todos os estudantes foi resetada.");
 
-        $count = 0;
-        foreach ($usuarios as $usuario) { 
-            //update_user_password($usuario, $nova_senha) 
-            $count++;
+        } catch (\Exception $e) {
+            \mtrace("ERRO ao resetar senhas: " . $e->getMessage());
+            throw $e; 
         }
-
-        \mtrace("Total de usuários com senha resetada: {$count}");
-        \mtrace("Nova senha: {$nova_senha}");
     }
 }
