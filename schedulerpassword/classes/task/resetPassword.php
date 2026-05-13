@@ -65,10 +65,11 @@ class resetPassword extends \core\task\scheduled_task {
         global $DB;
 
         \mtrace("Iniciando o reset de senhas...");
+        $nova_senha_gerada = $this->generate_random_password();
+        $nova_senha_hash = hash_internal_user_password($nova_senha_gerada);
 
         try {
-            $nova_senha_gerada = $this->generate_random_password();
-            $nova_senha_hash = hash_internal_user_password($nova_senha_gerada);
+            // Alteração da senha no Banco de Dados do Moodle
             $sql = "UPDATE {user} u
                 SET u.password = :password
                 WHERE u.suspended = 0
@@ -84,6 +85,25 @@ class resetPassword extends \core\task\scheduled_task {
 
             \mtrace("SUCESSO: A senha de todos os estudantes foi resetada.");
 
+            // Alteração da senha das escolas no Supabase via API
+            $apikey = get_config('local_schedulerpassword', 'api_key');
+            $jwt_token = get_config('local_schedulerpassword', 'jwt_token');
+
+            $curl = new \curl();
+            $curl->setHeader([
+                "Content-Type: application/json",
+                "apikey: $apikey",
+                "Authorization: Bearer $jwt_token"
+            ]);
+            $response = $curl->post('https://moodlesupa.inovasee.org/rest/v1/rpc/atualizar_senha_escolas', json_encode(['nova_senha' => $nova_senha_gerada]));
+
+            $info = $curl->get_info();
+            if ($info['http_code'] >= 200 && $info['http_code'] < 300) {
+                \mtrace("SUCESSO: Senhas das escolas atualizadas.");
+            } else {
+                \mtrace("ERRO na requisição: Código HTTP " . $info['http_code']);
+                \mtrace("Resposta: " . $response);
+            }
         } catch (\Exception $e) {
             \mtrace("ERRO ao resetar senhas: " . $e->getMessage());
             throw $e; 

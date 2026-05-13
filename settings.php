@@ -22,10 +22,26 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_schedulerpassword';
-$plugin->version   = 2026042900;
-$plugin->release   = '1.0.0';
-$plugin->requires  = 2025041402;
-$plugin->maturity  = MATURITY_STABLE;
+if ($ADMIN->fulltree) {
+
+    require_once($CFG->dirroot.'/mod/scheduler/lib.php');
+
+    $settings->add(new admin_setting_configpasswordunmasked(
+            'local_schedulerpassword/api_key',
+            'Chave da API',
+            'Insira a chave secreta para a requisição externa',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.FjnxPPazSd4-qwWSN7VmuIIniex4cm846T1WIXd6EBo'
+        )
+    );
+
+    $settings->add(new admin_setting_configpasswordunmasked(
+            'local_schedulerpassword/jwt_token',
+            'Token JWT',
+            'Insira o token JWT para autenticação',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.FjnxPPazSd4-qwWSN7VmuIIniex4cm846T1WIXd6EBo'
+        )
+    );
+
+}
